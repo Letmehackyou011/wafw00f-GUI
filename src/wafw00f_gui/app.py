@@ -5,6 +5,7 @@ from dataclasses import asdict
 from datetime import datetime
 import logging
 from pathlib import Path
+import sys
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 from urllib.parse import urlparse
@@ -27,6 +28,8 @@ class Wafw00fGuiApp:
         self.root.title("wafw00f GUI")
         self.root.geometry("980x680")
         self.root.minsize(900, 620)
+        self._logo_image: tk.PhotoImage | None = None
+        self._apply_logo()
         self._configure_style()
 
         self.app_dir = Path.home() / ".wafw00f-gui"
@@ -82,6 +85,10 @@ class Wafw00fGuiApp:
             text="Web Application Firewall fingerprinting desktop client",
             style="SubHeader.TLabel",
         ).grid(row=1, column=0, columnspan=4, sticky="w", pady=(2, 10))
+
+        if self._logo_image is not None:
+            logo_label = ttk.Label(top_frame, image=self._logo_image)
+            logo_label.grid(row=0, column=4, rowspan=3, sticky="ne", padx=(12, 0))
 
         ttk.Label(top_frame, text="Target URL:").grid(row=2, column=0, sticky="w", padx=(0, 8))
         self.url_entry = ttk.Entry(top_frame, textvariable=self.url_var)
@@ -365,6 +372,25 @@ class Wafw00fGuiApp:
             "- BSD-3-Clause"
         )
         messagebox.showinfo("About wafw00f GUI", about_text)
+
+    @staticmethod
+    def _resource_path(*parts: str) -> Path:
+        base_dir = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parents[2]))
+        return base_dir.joinpath(*parts)
+
+    def _apply_logo(self) -> None:
+        logo_path = self._resource_path("assets", "logo.png")
+        if not logo_path.exists():
+            self.logger.info("Logo file not found at %s", logo_path)
+            return
+
+        try:
+            image = tk.PhotoImage(file=str(logo_path))
+            subsample_factor = 8 if image.width() > 256 else 4
+            self._logo_image = image.subsample(subsample_factor, subsample_factor)
+            self.root.iconphoto(True, self._logo_image)
+        except Exception:
+            self.logger.exception("Failed loading logo from %s", logo_path)
 
     def show_terms(self) -> None:
         messagebox.showinfo("Terms & Legal Disclaimer", self._terms_text())

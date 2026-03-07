@@ -82,7 +82,7 @@ python3 --version
 ### 2) Get the source code
 
 ```bash
-git clone <your-repository-url>
+git clone https://github.com/Letmehackyou011/wafw00f-GUI
 cd wafw00f
 ```
 

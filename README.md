@@ -33,6 +33,11 @@ This app runs the original `wafw00f` scanner under the hood and displays results
 - **Runtime:** Python 3.10+
 - **Packaging:** PyInstaller standalone binaries (`.exe` on Windows, native binary on Linux)
 
+## Download
+<a href="https://sourceforge.net/p/wafw00f-gui/"><img alt="Download wafw00f-GUI" src="https://sourceforge.net/sflogo.php?type=17&amp;group_id=4067066" width=200></a>
+
+<a href="https://sourceforge.net/projects/wafw00f-gui/files/latest/download"><img alt="Download wafw00f-GUI" src="https://a.fsdn.com/con/app/sf-download-button" width=276 height=48 srcset="https://a.fsdn.com/con/app/sf-download-button?button_size=2x 2x"></a>
+
 ### How it works (high level)
 
 1. You provide a target URL.
@@ -179,9 +184,6 @@ Generated output:
 5. Watch live output panel for results.
 
 ---
-
-## Download
-<a href="https://sourceforge.net/projects/wafw00f-gui/files/latest/download"><img alt="Download wafw00f-GUI" src="https://a.fsdn.com/con/app/sf-download-button" width=276 height=48 srcset="https://a.fsdn.com/con/app/sf-download-button?button_size=2x 2x"></a>
 
 ## Troubleshooting
 

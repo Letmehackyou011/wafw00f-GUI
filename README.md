@@ -82,7 +82,7 @@ python3 --version
 ### 2) Get the source code
 
 ```bash
-git clone <your-repository-url>
+git clone https://github.com/Letmehackyou011/wafw00f-GUI
 cd wafw00f
 ```
 
@@ -179,6 +179,9 @@ Generated output:
 5. Watch live output panel for results.
 
 ---
+
+## Download
+<a href="https://sourceforge.net/projects/wafw00f-gui/files/latest/download"><img alt="Download wafw00f-GUI" src="https://a.fsdn.com/con/app/sf-download-button" width=276 height=48 srcset="https://a.fsdn.com/con/app/sf-download-button?button_size=2x 2x"></a>
 
 ## Troubleshooting
 

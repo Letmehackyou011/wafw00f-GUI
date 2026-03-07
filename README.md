@@ -180,6 +180,9 @@ Generated output:
 
 ---
 
+## Download
+<a href="https://sourceforge.net/projects/wafw00f-gui/files/latest/download"><img alt="Download wafw00f-GUI" src="https://a.fsdn.com/con/app/sf-download-button" width=276 height=48 srcset="https://a.fsdn.com/con/app/sf-download-button?button_size=2x 2x"></a>
+
 ## Troubleshooting
 
 ### `No module named wafw00f`

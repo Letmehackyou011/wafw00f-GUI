@@ -35,7 +35,7 @@ This app runs the original `wafw00f` scanner under the hood and displays results
 
 ## Download
 <a href="https://sourceforge.net/p/wafw00f-gui/"><img alt="Download wafw00f-GUI" src="https://sourceforge.net/sflogo.php?type=17&amp;group_id=4067066" width=200></a>
-
+### Windows: wafw00f.exe 8DA70B6891CA049BDF569275092A719DD1EA621BB542F42CD664202818E9A335
 <a href="https://sourceforge.net/projects/wafw00f-gui/files/latest/download"><img alt="Download wafw00f-GUI" src="https://a.fsdn.com/con/app/sf-download-button" width=276 height=48 srcset="https://a.fsdn.com/con/app/sf-download-button?button_size=2x 2x"></a>
 
 ### How it works (high level)

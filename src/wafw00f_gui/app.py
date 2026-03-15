@@ -6,6 +6,7 @@ from datetime import datetime
 import logging
 from pathlib import Path
 import sys
+import threading
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 from urllib.parse import urlparse
@@ -13,11 +14,13 @@ from urllib.parse import urlparse
 from wafw00f_gui import __version__
 from wafw00f_gui.logging_utils import setup_logging
 from wafw00f_gui.runner import ScanConfig, ScanResult, UiEventBridge, Wafw00fRunner
+from wafw00f_gui.update_checker import check_updates, format_update_message
 
 
 class Wafw00fGuiApp:
-    TERMS_VERSION = "2026-03-07"
+    TERMS_VERSION = "2026-03-15"
     MAINTAINER = "Letmehackyou011"
+    VERSION_NAME = "Version 1.1"
 
     def __init__(self) -> None:
         log_file = setup_logging()
@@ -82,7 +85,7 @@ class Wafw00fGuiApp:
         )
         ttk.Label(
             top_frame,
-            text="Web Application Firewall fingerprinting desktop client",
+            text=f"Web Application Firewall fingerprinting desktop client | {self.VERSION_NAME}",
             style="SubHeader.TLabel",
         ).grid(row=1, column=0, columnspan=4, sticky="w", pady=(2, 10))
 
@@ -164,7 +167,10 @@ class Wafw00fGuiApp:
         footer.columnconfigure(0, weight=1)
         ttk.Label(footer, textvariable=self.status_var).grid(row=0, column=0, sticky="w")
         ttk.Button(footer, text="Terms", command=self.show_terms).grid(row=0, column=1, sticky="e", padx=(0, 8))
-        ttk.Button(footer, text="About", command=self.show_about).grid(row=0, column=2, sticky="e")
+        ttk.Button(footer, text="Check Updates", command=self.check_updates_clicked).grid(
+            row=0, column=2, sticky="e", padx=(0, 8)
+        )
+        ttk.Button(footer, text="About", command=self.show_about).grid(row=0, column=3, sticky="e")
 
         self.root.bind("<Return>", lambda _event: self.start_scan())
         self.root.bind("<Control-l>", self._focus_url)
@@ -189,9 +195,20 @@ class Wafw00fGuiApp:
         config = ScanConfig(
             target_url=url,
             find_all=self.find_all_var.get(),
-            verbose=self.verbose_var.get(),
+            verbose_level=1 if self.verbose_var.get() else 0,
             no_redirect=self.no_redirect_var.get(),
+            no_colors=False,
+            list_only=False,
+            version_only=False,
+            test_name="",
+            output_file="",
+            output_format="",
+            input_file="",
+            proxy="",
+            headers_file="",
+            request_timeout=None,
             extra_args=self.extra_args_var.get(),
+            execution_timeout_seconds=180,
         )
 
         self.clear_output()
@@ -202,6 +219,7 @@ class Wafw00fGuiApp:
             self.runner.run_async(config, self.bridge.push_line, self.bridge.push_done)
         except Exception as exc:
             self.logger.exception("Cannot start scan")
+            self._append_output(f"[error] Could not start scan: {exc}")
             messagebox.showerror("Cannot start", str(exc))
             return
 
@@ -362,6 +380,15 @@ class Wafw00fGuiApp:
     def show_about(self) -> None:
         about_text = (
             f"wafw00f GUI v{__version__}\n\n"
+            f"Release name: {self.VERSION_NAME}\n\n"
+            "What is this tool?\n"
+            "- A desktop interface for wafw00f, a WAF fingerprinting utility.\n"
+            "- It helps identify web application firewalls protecting target web apps.\n\n"
+            "Why this tool is used:\n"
+            "- Security testing teams use it in authorized assessments to understand\n"
+            "  defensive controls before deeper testing.\n"
+            "- Bug bounty and pentest workflows use it for recon and validation.\n"
+            "- It improves visibility of likely filtering/protection behavior.\n\n"
             "Maintainer:\n"
             f"- {self.MAINTAINER} (GitHub)\n\n"
             "Original wafw00f developers:\n"
@@ -369,9 +396,30 @@ class Wafw00fGuiApp:
             "- Pinaki Mondal\n"
             "- Upstream: https://github.com/EnableSecurity/wafw00f\n\n"
             "License:\n"
-            "- BSD-3-Clause"
+            "- BSD-3-Clause\n\n"
+            "Support features:\n"
+            "- Live output, export, scan history\n"
+            "- Check Updates for GUI and wafw00f versions"
         )
         messagebox.showinfo("About wafw00f GUI", about_text)
+
+    def check_updates_clicked(self) -> None:
+        self.status_var.set("Checking updates...")
+        worker = threading.Thread(target=self._check_updates_worker, daemon=True)
+        worker.start()
+
+    def _check_updates_worker(self) -> None:
+        try:
+            info = check_updates(__version__)
+            message = format_update_message(info)
+            self.root.after(0, lambda: self._show_update_result(message))
+        except Exception as exc:
+            self.root.after(0, lambda: messagebox.showerror("Update check failed", str(exc)))
+
+    def _show_update_result(self, message: str) -> None:
+        self.status_var.set("Update check completed")
+        messagebox.showinfo("Check Updates", message)
+        self._append_output("[update] " + message.replace("\n", " | "))
 
     @staticmethod
     def _resource_path(*parts: str) -> Path:
@@ -379,14 +427,20 @@ class Wafw00fGuiApp:
         return base_dir.joinpath(*parts)
 
     def _apply_logo(self) -> None:
-        logo_path = self._resource_path("assets", "logo.png")
-        if not logo_path.exists():
-            self.logger.info("Logo file not found at %s", logo_path)
+        candidates = [
+            self._resource_path("assets", "Wafw00w-GUI.png"),
+            self._resource_path("assets", "logo.png"),
+            self._resource_path("Wafw00w-GUI.png"),
+        ]
+
+        logo_path = next((path for path in candidates if path.exists()), None)
+        if logo_path is None:
+            self.logger.info("Logo file not found. Checked: %s", ", ".join(str(p) for p in candidates))
             return
 
         try:
             image = tk.PhotoImage(file=str(logo_path))
-            subsample_factor = 8 if image.width() > 256 else 4
+            subsample_factor = max(1, image.width() // 96)
             self._logo_image = image.subsample(subsample_factor, subsample_factor)
             self.root.iconphoto(True, self._logo_image)
         except Exception:
@@ -491,12 +545,23 @@ class Wafw00fGuiApp:
             "IMPORTANT LEGAL DISCLAIMER\n\n"
             "This application performs web application firewall fingerprinting and may send security-related "
             "HTTP requests to target systems.\n\n"
+            "TERMS OF USE\n"
+            "By using this software, you acknowledge and agree to all conditions below.\n\n"
             "By clicking 'Accept and Continue', you agree that:\n"
             "1) You will use this software only on systems you own or are explicitly authorized to test.\n"
             "2) You are solely responsible for complying with applicable laws, regulations, and contracts.\n"
             "3) Unauthorized scanning or testing may be illegal in your jurisdiction.\n"
             "4) The software is provided 'AS IS' without warranties, under the BSD-3-Clause license.\n"
             "5) The maintainer and upstream contributors are not liable for misuse, damages, or legal claims.\n\n"
+            "LEGAL NOTES\n"
+            "- This tool is intended for defensive security testing, research, and authorized assessments.\n"
+            "- You must not use this tool to disrupt services, bypass controls, or target unauthorized assets.\n"
+            "- You are responsible for all actions, requests, logs, and legal consequences.\n"
+            "- The software may produce false positives/negatives and should not be treated as sole evidence.\n"
+            "- Always verify findings manually and follow your organization policy and local law.\n\n"
+            "CHECK UPDATES\n"
+            "- The application can query latest GUI/wafw00f versions using public release endpoints.\n"
+            "- This action requires internet access and may send version-related requests.\n\n"
             f"Maintainer: {self.MAINTAINER} (GitHub)\n"
             "Original wafw00f developers: Sandro Gauci, Pinaki Mondal\n"
             "Upstream project: https://github.com/EnableSecurity/wafw00f\n"

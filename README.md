@@ -154,6 +154,7 @@ Generated output:
 - `dist/LICENSE.txt`
 - `dist/CREDITS.md`
 - `dist/README.md`
+- `dist/SHA256SUMS.txt`
 
 ### Linux binary
 
@@ -167,6 +168,33 @@ Generated output:
 - `dist/LICENSE.txt`
 - `dist/CREDITS.md`
 - `dist/README.md`
+- `dist/SHA256SUMS.txt`
+
+### Download prebuilt binaries (recommended for end users)
+
+End users do **not** need Python when using PyInstaller builds.
+
+- Use GitHub Actions workflow: `.github/workflows/build-binaries.yml`
+- Trigger via `workflow_dispatch` or create a version tag like `v1.0.0`
+- Download artifacts from the workflow run:
+	- `wafw00f-gui-Windows`
+	- `wafw00f-gui-Linux`
+
+Each artifact includes binary + `SHA256SUMS.txt` for integrity verification.
+
+### Verify checksums
+
+Windows:
+
+```powershell
+Get-FileHash -Algorithm SHA256 dist\wafw00f-gui.exe
+```
+
+Linux:
+
+```bash
+sha256sum -c dist/SHA256SUMS.txt
+```
 
 ---
 
@@ -177,6 +205,36 @@ Generated output:
 3. Select optional flags (`-a`, `-v`, `-r`) if needed.
 4. Click **Run Scan**.
 5. Watch live output panel for results.
+
+## Manual: All Args (Extra Args)
+
+Use the **Extra args** input field to pass any wafw00f CLI options directly.
+
+Supported flags:
+
+- `-h`, `--help`: show help
+- `-v`, `--verbose`: increase verbosity (can be repeated)
+- `-a`, `--findall`: find all matching WAF signatures
+- `-r`, `--noredirect`: do not follow redirects
+- `-t <name>`, `--test=<name>`: test a specific WAF signature
+- `-o <file>`, `--output=<file>`: write output to file
+- `-f <fmt>`, `--format=<fmt>`: force output format (`csv`, `json`, `text`)
+- `-i <file>`, `--input-file=<file>`: read targets from input file
+- `-l`, `--list`: list supported WAF signatures
+- `-p <proxy>`, `--proxy=<proxy>`: use HTTP/SOCKS proxy
+- `-V`, `--version`: print wafw00f version
+- `-H <file>`, `--headers=<file>`: custom headers file
+- `-T <seconds>`, `--timeout=<seconds>`: request timeout
+- `--no-colors`: disable ANSI colors in output
+
+Examples for **Extra args**:
+
+- `-v -v --no-colors`
+- `-p http://127.0.0.1:8080 -T 20`
+- `-t "Cloudflare (Cloudflare Inc.)" -v`
+- `-o result.json -f json`
+- `-i targets.txt -a`
+- `-l`
 
 ---
 
@@ -204,6 +262,13 @@ Then rerun the app.
 ### Linux Tkinter missing
 
 Install Tk package for your distro, then retry.
+
+### Running Linux build script from Windows path fails
+
+If `bash ./scripts/build.sh` fails from a Windows drive path, use one of these:
+
+- Build Linux binary on a real Linux machine (recommended)
+- Use the included GitHub Actions workflow to build Linux artifact automatically
 
 ### PowerShell script blocked (Windows)
 

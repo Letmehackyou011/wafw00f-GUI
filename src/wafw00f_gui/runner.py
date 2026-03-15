@@ -11,17 +11,28 @@ from dataclasses import dataclass, field
 from datetime import datetime
 import logging
 from queue import Queue
+import re
 from typing import Callable
 
 
 @dataclass
 class ScanConfig:
-    target_url: str
+    target_url: str = ""
     find_all: bool = False
-    verbose: bool = False
+    verbose_level: int = 0
     no_redirect: bool = False
+    no_colors: bool = False
+    list_only: bool = False
+    version_only: bool = False
+    test_name: str = ""
+    output_file: str = ""
+    output_format: str = ""
+    input_file: str = ""
+    proxy: str = ""
+    headers_file: str = ""
+    request_timeout: int | None = None
     extra_args: str = ""
-    timeout_seconds: int = 180
+    execution_timeout_seconds: int = 180
 
 
 @dataclass
@@ -75,21 +86,55 @@ class Wafw00fRunner:
 
     def _build_command(self, config: ScanConfig) -> list[str]:
         command = self._resolve_wafw00f_command()
-        command.append(config.target_url)
+        extra_parts: list[str] = []
 
         if config.find_all:
             command.append("-a")
-        if config.verbose:
-            command.append("-v")
         if config.no_redirect:
             command.append("-r")
+        if config.no_colors:
+            command.append("--no-colors")
+        if config.list_only:
+            command.append("-l")
+        if config.version_only:
+            command.append("-V")
+
+        for _ in range(max(config.verbose_level, 0)):
+            command.append("-v")
+
+        if config.test_name.strip():
+            command.extend(["-t", config.test_name.strip()])
+        if config.output_file.strip():
+            command.extend(["-o", config.output_file.strip()])
+        if config.output_format.strip():
+            command.extend(["-f", config.output_format.strip()])
+        if config.input_file.strip():
+            command.extend(["-i", config.input_file.strip()])
+        if config.proxy.strip():
+            command.extend(["-p", config.proxy.strip()])
+        if config.headers_file.strip():
+            command.extend(["-H", config.headers_file.strip()])
+        if config.request_timeout is not None and config.request_timeout > 0:
+            command.extend(["-T", str(config.request_timeout)])
 
         if config.extra_args.strip():
             try:
                 parts = shlex.split(config.extra_args, posix=(os.name != "nt"))
             except ValueError as exc:
                 raise ValueError(f"Invalid extra arguments: {exc}") from exc
-            command.extend(parts)
+            extra_parts.extend(parts)
+
+        target = config.target_url.strip()
+        contains_url_in_extra = any(re.match(r"https?://", token, flags=re.IGNORECASE) for token in extra_parts)
+        target_optional = config.list_only or config.version_only or bool(config.input_file.strip())
+
+        if not target and not contains_url_in_extra and not target_optional:
+            raise ValueError("A target URL is required unless using --list, --version, or --input-file")
+
+        if target:
+            command.append(target)
+
+        command.extend(extra_parts)
 
         return command
 
@@ -185,14 +230,14 @@ class Wafw00fRunner:
             if self._stop_requested.is_set() and self.is_running:
                 self._terminate_process()
 
-            exit_code = self._process.wait(timeout=max(config.timeout_seconds, 1))
+            exit_code = self._process.wait(timeout=max(config.execution_timeout_seconds, 1))
             stopped = self._stop_requested.is_set()
             error_message = None
             if stopped:
                 line_callback("[info] Scan stopped by user")
         except subprocess.TimeoutExpired:
             self._terminate_process()
-            timeout_msg = f"Scan timed out after {max(config.timeout_seconds, 1)} seconds"
+            timeout_msg = f"Scan timed out after {max(config.execution_timeout_seconds, 1)} seconds"
             lines.append(f"[runner-error] {timeout_msg}")
             line_callback(lines[-1])
             exit_code = None

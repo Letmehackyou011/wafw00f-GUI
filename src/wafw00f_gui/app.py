@@ -46,6 +46,8 @@ class Wafw00fGuiApp:
         self.find_all_var = tk.BooleanVar(value=False)
         self.verbose_var = tk.BooleanVar(value=False)
         self.no_redirect_var = tk.BooleanVar(value=False)
+        self.proxy_var = tk.StringVar()
+        self.request_timeout_var = tk.StringVar(value="20")
         self.extra_args_var = tk.StringVar()
         self.status_var = tk.StringVar(value="Ready")
         self.summary_var = tk.StringVar(value="No scan yet")
@@ -107,6 +109,7 @@ class Wafw00fGuiApp:
         options_frame = ttk.LabelFrame(self.root, text="Options", padding=12)
         options_frame.grid(row=1, column=0, sticky="ew", padx=12)
         options_frame.columnconfigure(4, weight=1)
+        options_frame.columnconfigure(6, weight=1)
 
         ttk.Checkbutton(options_frame, text="Find all WAFs (-a)", variable=self.find_all_var).grid(
             row=0, column=0, sticky="w", padx=(0, 16)
@@ -119,6 +122,17 @@ class Wafw00fGuiApp:
         )
         ttk.Label(options_frame, text="Extra args:").grid(row=0, column=3, sticky="e", padx=(0, 8))
         ttk.Entry(options_frame, textvariable=self.extra_args_var).grid(row=0, column=4, sticky="ew")
+        ttk.Label(options_frame, text="Proxy (-p):").grid(row=1, column=0, sticky="e", padx=(0, 8), pady=(8, 0))
+        ttk.Entry(options_frame, textvariable=self.proxy_var).grid(
+            row=1, column=1, columnspan=2, sticky="ew", pady=(8, 0)
+        )
+        ttk.Label(options_frame, text="Req timeout (-T):").grid(row=1, column=3, sticky="e", padx=(0, 8), pady=(8, 0))
+        ttk.Entry(options_frame, textvariable=self.request_timeout_var, width=8).grid(
+            row=1, column=4, sticky="w", pady=(8, 0)
+        )
+        ttk.Button(options_frame, text="Args Manual", command=self.show_args_manual).grid(
+            row=1, column=6, sticky="e", pady=(8, 0)
+        )
 
         main_pane = ttk.Panedwindow(self.root, orient=tk.HORIZONTAL)
         main_pane.grid(row=2, column=0, sticky="nsew", padx=12, pady=(10, 10))
@@ -192,6 +206,17 @@ class Wafw00fGuiApp:
             messagebox.showerror("Invalid target URL", validation_message)
             return
 
+        timeout_raw = self.request_timeout_var.get().strip()
+        request_timeout: int | None = None
+        if timeout_raw:
+            try:
+                request_timeout = int(timeout_raw)
+                if request_timeout <= 0:
+                    raise ValueError("timeout must be > 0")
+            except ValueError:
+                messagebox.showerror("Invalid timeout", "Request timeout (-T) must be a positive integer.")
+                return
+
         config = ScanConfig(
             target_url=url,
             find_all=self.find_all_var.get(),
@@ -204,9 +229,9 @@ class Wafw00fGuiApp:
             output_file="",
             output_format="",
             input_file="",
-            proxy="",
+            proxy=self.proxy_var.get().strip(),
             headers_file="",
-            request_timeout=None,
+            request_timeout=request_timeout,
             extra_args=self.extra_args_var.get(),
             execution_timeout_seconds=180,
         )
@@ -214,6 +239,8 @@ class Wafw00fGuiApp:
         self.clear_output()
         self._append_output(f"[info] Started at {datetime.now().isoformat(timespec='seconds')}")
         self._append_output(f"[info] Target: {url}")
+        if request_timeout is not None:
+            self._append_output(f"[info] Request timeout (-T): {request_timeout}s")
 
         try:
             self.runner.run_async(config, self.bridge.push_line, self.bridge.push_done)
@@ -342,6 +369,12 @@ class Wafw00fGuiApp:
                     "wafw00f is not installed in this Python environment.\n\n"
                     "Install it with: python -m pip install wafw00f",
                 )
+            elif "timed out" in result.output.lower() or "max retries exceeded" in result.output.lower():
+                messagebox.showwarning(
+                    "Target timeout",
+                    "Target did not respond in time or network path is blocked.\n\n"
+                    "Try increasing Request timeout (-T), verify connectivity, or use a proxy.",
+                )
             else:
                 snippet = result.output.strip()
                 if len(snippet) > 900:
@@ -402,6 +435,32 @@ class Wafw00fGuiApp:
             "- Check Updates for GUI and wafw00f versions"
         )
         messagebox.showinfo("About wafw00f GUI", about_text)
+
+    def show_args_manual(self) -> None:
+        manual = (
+            "All wafw00f args (you can also pass these in Extra args):\n\n"
+            "-h, --help\n"
+            "-v, --verbose\n"
+            "-a, --findall\n"
+            "-r, --noredirect\n"
+            "-t <name>, --test=<name>\n"
+            "-o <file>, --output=<file>\n"
+            "-f <fmt>, --format=<fmt>  [csv|json|text]\n"
+            "-i <file>, --input-file=<file>\n"
+            "-l, --list\n"
+            "-p <proxy>, --proxy=<proxy>\n"
+            "-V, --version\n"
+            "-H <file>, --headers=<file>\n"
+            "-T <seconds>, --timeout=<seconds>\n"
+            "--no-colors\n\n"
+            "Examples:\n"
+            "-v -v --no-colors\n"
+            "-p http://127.0.0.1:8080 -T 25\n"
+            "-t \"Cloudflare (Cloudflare Inc.)\"\n"
+            "-o result.json -f json\n"
+            "-i targets.txt -a"
+        )
+        messagebox.showinfo("Args Manual", manual)
 
     def check_updates_clicked(self) -> None:
         self.status_var.set("Checking updates...")

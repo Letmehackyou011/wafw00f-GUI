@@ -4,6 +4,8 @@ from dataclasses import dataclass
 import importlib.metadata
 import json
 import re
+from typing import Any
+from urllib.error import HTTPError
 from urllib.request import urlopen
 
 
@@ -25,7 +27,7 @@ def _is_newer(latest: str, current: str) -> bool:
     return _parse_version_tuple(latest) > _parse_version_tuple(current)
 
 
-def _fetch_json(url: str, timeout: int = 8) -> dict[str, object]:
+def _fetch_json(url: str, timeout: int = 8) -> Any:
     with urlopen(url, timeout=timeout) as response:
         data = response.read().decode("utf-8", errors="replace")
     return json.loads(data)
@@ -35,6 +37,13 @@ def _installed_version(package_name: str) -> str | None:
     try:
         return importlib.metadata.version(package_name)
     except importlib.metadata.PackageNotFoundError:
+        try:
+            if package_name == "wafw00f":
+                import wafw00f  # type: ignore
+
+                return str(getattr(wafw00f, "__version__", "")) or None
+        except Exception:
+            return None
         return None
 
 
@@ -54,6 +63,20 @@ def check_updates(gui_current_version: str) -> UpdateInfo:
     try:
         release = _fetch_json("https://api.github.com/repos/Letmehackyou011/wafw00f-GUI/releases/latest")
         gui_latest = str(release.get("tag_name", "")).lstrip("v") or None
+    except HTTPError as exc:
+        if exc.code == 404:
+            try:
+                tags = _fetch_json("https://api.github.com/repos/Letmehackyou011/wafw00f-GUI/tags")
+                if isinstance(tags, list) and tags:
+                    first = tags[0]
+                    if isinstance(first, dict):
+                        gui_latest = str(first.get("name", "")).lstrip("v") or None
+                if not gui_latest:
+                    notes.append("No published GUI release/tag found yet")
+            except Exception as tag_exc:
+                notes.append(f"Could not check GUI updates from tags: {tag_exc}")
+        else:
+            notes.append(f"Could not check GUI updates: HTTP {exc.code}")
     except Exception as exc:
         notes.append(f"Could not check GUI updates: {exc}")
 

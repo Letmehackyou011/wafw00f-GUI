@@ -19,17 +19,18 @@ from wafw00f_gui.update_checker import check_updates, format_update_message
 
 class Wafw00fGuiApp:
     TERMS_VERSION = "2026-03-15"
-    MAINTAINER = "Letmehackyou011"
+    DEVELOPER = "Letmehackyou011"
     VERSION_NAME = "Version 1.1"
+    GITHUB_URL = "https://github.com/Letmehackyou011"
 
     def __init__(self) -> None:
         log_file = setup_logging()
         self.logger = logging.getLogger(__name__)
-        self.logger.info("Starting wafw00f GUI v%s", __version__)
+        self.logger.info("Starting Wafw00f GUI v%s", __version__)
 
         self.root = tk.Tk()
-        self.root.title("wafw00f GUI")
-        self.root.geometry("980x680")
+        self.root.title("Wafw00f GUI")
+        self.root.geometry("950x650")
         self.root.minsize(900, 620)
         self._logo_image: tk.PhotoImage | None = None
         self._apply_logo()
@@ -87,7 +88,7 @@ class Wafw00fGuiApp:
         )
         ttk.Label(
             top_frame,
-            text=f"Web Application Firewall fingerprinting desktop client | {self.VERSION_NAME}",
+            text=f"Web Application Firewall fingerprinting desktop client | {self.VERSION_NAME} | Made by {self.DEVELOPER}",
             style="SubHeader.TLabel",
         ).grid(row=1, column=0, columnspan=4, sticky="w", pady=(2, 10))
 
@@ -422,8 +423,9 @@ class Wafw00fGuiApp:
             "  defensive controls before deeper testing.\n"
             "- Bug bounty and pentest workflows use it for recon and validation.\n"
             "- It improves visibility of likely filtering/protection behavior.\n\n"
-            "Maintainer:\n"
-            f"- {self.MAINTAINER} (GitHub)\n\n"
+            "GUI Developer:\n"
+            f"- {self.DEVELOPER} (GitHub)\n\n"
+            f"-GitHub: {self.GITHUB_URL}\n\n"
             "Original wafw00f developers:\n"
             "- Sandro Gauci\n"
             "- Pinaki Mondal\n"
@@ -524,7 +526,7 @@ class Wafw00fGuiApp:
                     "accepted": True,
                     "version": self.TERMS_VERSION,
                     "accepted_at": datetime.utcnow().isoformat() + "Z",
-                    "maintainer": self.MAINTAINER,
+                    "maintainer": self.DEVELOPER,
                 }
             )
             return True
@@ -621,9 +623,11 @@ class Wafw00fGuiApp:
             "CHECK UPDATES\n"
             "- The application can query latest GUI/wafw00f versions using public release endpoints.\n"
             "- This action requires internet access and may send version-related requests.\n\n"
-            f"Maintainer: {self.MAINTAINER} (GitHub)\n"
+            f"GUI Developer: {self.DEVELOPER} (GitHub)\n"
             "Original wafw00f developers: Sandro Gauci, Pinaki Mondal\n"
             "Upstream project: https://github.com/EnableSecurity/wafw00f\n"
+
+            "Any illegal use or unauthorized use of this software is user's responsibility and Developer/Maintainer is not liable for any consequences arising out of such use."
         )
 
     def _load_consent(self) -> dict[str, object]:

@@ -46,7 +46,7 @@ Wafw00f GUI helps by providing:
 
 Current screenshot:
 
-- Main screen: `docs/screenshots/Screensht.png`
+- Main screen: ![Wafw00f GUI Main Screen](docs/screenshots/Screensht.png)
 
 ## Architecture Summary
 

@@ -44,23 +44,9 @@ Wafw00f GUI helps by providing:
 - Pinaki Mondal
 - Upstream project: https://github.com/EnableSecurity/wafw00f
 
-## Screenshots
-
-Store images in `docs/screenshots/` and reference them in this section.
-
 Current screenshot:
 
-- Main screen: `docs/screenshots/app-main.png`
-
-Example pattern:
-
-```markdown
-### Scan Running
-![Scan Running](docs/screenshots/scan-running.png)
-
-### Terms Dialog
-![Terms Dialog](docs/screenshots/terms-dialog.png)
-```
+- Main screen: `docs/screenshots/Screensht.png`
 
 ## Architecture Summary
 

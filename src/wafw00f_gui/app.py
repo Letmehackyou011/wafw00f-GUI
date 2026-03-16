@@ -423,7 +423,7 @@ class Wafw00fGuiApp:
             "  defensive controls before deeper testing.\n"
             "- Bug bounty and pentest workflows use it for recon and validation.\n"
             "- It improves visibility of likely filtering/protection behavior.\n\n"
-            "GUI Developer:\n"
+            "GUI_Developer:\n"
             f"- {self.DEVELOPER} (GitHub)\n\n"
             f"-GitHub: {self.GITHUB_URL}\n\n"
             "Original wafw00f developers:\n"

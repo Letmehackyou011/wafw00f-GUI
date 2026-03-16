@@ -1,101 +1,92 @@
-# wafw00f GUI (Windows + Linux)
+# Wafw00f GUI
 
-Desktop GUI wrapper for [wafw00f](https://github.com/EnableSecurity/wafw00f), built in Python.
+A cross-platform desktop GUI for `wafw00f`, built to make WAF fingerprinting easier, faster, and more operationally friendly on Windows and Linux.
 
-This app runs the original `wafw00f` scanner under the hood and displays results in a desktop interface.
+This project wraps the official `wafw00f` engine with a visual interface for running scans, tuning options, reviewing output, exporting artifacts, and checking updates.
 
-## Maintainer
+![Wafw00f GUI Main Screen](docs/screenshots/app-main.png)
 
-- GitHub maintainer: **Letmehackyou011**
+## Why This Project
 
-## Original wafw00f developers
+`wafw00f` is excellent for command-line workflows, but many users prefer a desktop experience for repeated testing and reporting.
+
+Wafw00f GUI helps by providing:
+
+- Faster onboarding for users who are not terminal-first
+- Real-time output with less context switching
+- Easy access to common options and manual flags
+- Export-ready output for documentation and sharing
+
+## Core Features
+
+- Live scan execution powered by upstream `wafw00f`
+- Real-time output panel
+- Scan history viewer
+- Built-in controls for common flags (`-a`, `-v`, `-r`)
+- Manual args support through **Extra args**
+- In-app args manual dialog
+- Proxy (`-p`) and request-timeout (`-T`) controls
+- Export to TXT and JSON
+- GUI + wafw00f update checking
+- Terms & legal acceptance flow
+- PyInstaller packaging for Python-less end users
+
+## Project Ownership And Credits
+
+### GUI Developer
+
+- `Letmehackyou011`
+- GitHub: https://github.com/Letmehackyou011
+
+### Upstream wafw00f Maintainers
 
 - Sandro Gauci
 - Pinaki Mondal
 - Upstream project: https://github.com/EnableSecurity/wafw00f
 
-## Features
+## Screenshots
 
-- Cross-platform GUI (Windows + Linux)
-- Live scan output + scan history
-- Common options (`-a`, `-v`, `-r`) and extra CLI args
-- Export output to TXT and JSON
-- First-launch Terms & Conditions + legal disclaimer acceptance
+Store images in `docs/screenshots/` and reference them in this section.
 
-## Tool Information
+Current screenshot:
 
-- **Tool name:** wafw00f GUI
-- **Type:** Desktop GUI wrapper for web application firewall fingerprinting
-- **Core engine:** Official `wafw00f` scanner (upstream project)
-- **Primary purpose:** Detect and fingerprint WAF technologies protecting a target website
-- **Request model:** Uses HTTP/HTTPS request/response behavior through `wafw00f` logic
-- **Supported OS:** Windows and Linux
-- **Runtime:** Python 3.10+
-- **Packaging:** PyInstaller standalone binaries (`.exe` on Windows, native binary on Linux)
+- Main screen: `docs/screenshots/app-main.png`
 
-## Download
-<a href="https://sourceforge.net/p/wafw00f-gui/"><img alt="Download wafw00f-GUI" src="https://sourceforge.net/sflogo.php?type=17&amp;group_id=4067066" width=200></a>
-### Windows: wafw00f.exe 8DA70B6891CA049BDF569275092A719DD1EA621BB542F42CD664202818E9A335
-<a href="https://sourceforge.net/projects/wafw00f-gui/files/latest/download"><img alt="Download wafw00f-GUI" src="https://a.fsdn.com/con/app/sf-download-button" width=276 height=48 srcset="https://a.fsdn.com/con/app/sf-download-button?button_size=2x 2x"></a>
+Example pattern:
 
-### How it works (high level)
+```markdown
+### Scan Running
+![Scan Running](docs/screenshots/scan-running.png)
 
-1. You provide a target URL.
-2. The GUI launches `wafw00f` with selected options.
-3. Scanner output is streamed live into the app.
-4. Detection summary and request count are extracted and shown.
-5. Results can be exported to TXT or JSON.
-
-### Data and privacy behavior
-
-- The app does not require user login or cloud account.
-- Scan history is kept in local app memory for the current session.
-- Exported files are saved only to paths you choose.
-- Application logs are stored locally for troubleshooting.
-
-### Current scope and limitations
-
-- Detection capability depends on upstream `wafw00f` signatures and logic.
-- This tool does not bypass WAFs; it fingerprints likely protection layers.
-- Accuracy can vary based on target behavior, CDN layers, and blocking policies.
-- Use only on systems you are authorized to test.
-
----
-
-## Complete Installation Guide
-
-### 1) Prerequisites
-
-- Python **3.10+** installed
-- `pip` available
-- Internet access for target scanning
-- Windows: PowerShell
-- Linux: Bash + Tkinter support (usually included with system Python)
-
-Check Python version:
-
-```bash
-python --version
+### Terms Dialog
+![Terms Dialog](docs/screenshots/terms-dialog.png)
 ```
 
-or on Linux if needed:
+## Architecture Summary
 
-```bash
-python3 --version
-```
+1. User configures target + options in GUI.
+2. GUI constructs `ScanConfig`.
+3. Runner starts `wafw00f` subprocess.
+4. Output streams to UI in real time.
+5. Result summary is parsed and shown in history.
+6. User can export output artifacts.
 
-### 2) Get the source code
+## Installation
+
+### Requirements
+
+- Python `>=3.10`
+- `pip`
+- Internet access for scanning and update checks
+
+### Clone Repository
 
 ```bash
 git clone https://github.com/Letmehackyou011/wafw00f-GUI
 cd wafw00f
 ```
 
-If you already have the folder, just open terminal in the project root.
-
-### 3) Install dependencies
-
-#### Windows (PowerShell)
+### Install Dependencies (Windows)
 
 ```powershell
 python -m pip install --upgrade pip
@@ -103,7 +94,7 @@ python -m pip install -r requirements.txt
 python -m pip install -e .
 ```
 
-#### Linux (Bash)
+### Install Dependencies (Linux)
 
 ```bash
 python3 -m pip install --upgrade pip
@@ -111,185 +102,147 @@ python3 -m pip install -r requirements.txt
 python3 -m pip install -e .
 ```
 
-### 4) Run the app from source
+## Run The Application
 
-#### Windows (recommended script)
+### Windows
 
 ```powershell
 .\scripts\run.ps1
 ```
 
-#### Linux (recommended script)
+### Linux
 
 ```bash
 chmod +x scripts/*.sh
 ./scripts/run.sh
 ```
 
-#### Manual run
+### Direct Run
 
 ```bash
 python -m wafw00f_gui.main
 ```
 
-or:
+## Build Standalone Binary (PyInstaller)
 
-```bash
-wafw00f-gui
-```
-
-### 5) First launch behavior
-
-- You must accept Terms & Conditions and the legal disclaimer before scanning.
-- This acceptance is required to use the app.
-
----
-
-## Build Standalone Executable
-
-### Windows `.exe`
+### Windows
 
 ```powershell
 .\scripts\build.ps1
 ```
 
-Generated output:
-
-- `dist/wafw00f-gui.exe`
-- `dist/LICENSE.txt`
-- `dist/CREDITS.md`
-- `dist/README.md`
-- `dist/SHA256SUMS.txt`
-
-### Linux binary
+### Linux
 
 ```bash
 ./scripts/build.sh
 ```
 
-Generated output:
+Build output in `dist/`:
 
-- `dist/wafw00f-gui`
-- `dist/LICENSE.txt`
-- `dist/CREDITS.md`
-- `dist/README.md`
-- `dist/SHA256SUMS.txt`
+- `wafw00f-gui.exe` (Windows) or `wafw00f-gui` (Linux)
+- `LICENSE.txt`
+- `CREDITS.md`
+- `README.md`
+- `SHA256SUMS.txt`
 
-### Download prebuilt binaries (recommended for end users)
+## Use Without Python (End Users)
 
-End users do **not** need Python when using PyInstaller builds.
+End users can run prebuilt binaries directly and do not need Python installed.
 
-- Use GitHub Actions workflow: `.github/workflows/build-binaries.yml`
-- Trigger via `workflow_dispatch` or create a version tag like `v1.0.0`
-- Download artifacts from the workflow run:
-	- `wafw00f-gui-Windows`
-	- `wafw00f-gui-Linux`
+Recommended release process:
 
-Each artifact includes binary + `SHA256SUMS.txt` for integrity verification.
+1. Build using scripts above
+2. Publish `dist/` artifacts
+3. Publish checksums from `dist/SHA256SUMS.txt`
 
-### Verify checksums
+## In-App Usage Flow
 
-Windows:
+1. Enter target URL (example: `https://example.org`)
+2. Select options (`-a`, `-v`, `-r`) as needed
+3. Configure `Proxy (-p)` and `Req timeout (-T)` if needed
+4. Add advanced flags in **Extra args**
+5. Click **Run Scan**
+6. Review output and export results
 
-```powershell
-Get-FileHash -Algorithm SHA256 dist\wafw00f-gui.exe
+## Full Args Manual (Extra Args)
+
+Supported wafw00f flags:
+
+- `-h`, `--help`
+- `-v`, `--verbose`
+- `-a`, `--findall`
+- `-r`, `--noredirect`
+- `-t <name>`, `--test=<name>`
+- `-o <file>`, `--output=<file>`
+- `-f <format>`, `--format=<format>` where format is `csv`, `json`, or `text`
+- `-i <file>`, `--input-file=<file>`
+- `-l`, `--list`
+- `-p <proxy>`, `--proxy=<proxy>`
+- `-V`, `--version`
+- `-H <file>`, `--headers=<file>`
+- `-T <seconds>`, `--timeout=<seconds>`
+- `--no-colors`
+
+Examples:
+
+```text
+-v -v --no-colors
+-p http://127.0.0.1:8080 -T 30
+-t "Cloudflare (Cloudflare Inc.)"
+-o result.json -f json
+-i targets.txt -a
+-l
 ```
-
-Linux:
-
-```bash
-sha256sum -c dist/SHA256SUMS.txt
-```
-
----
-
-## How to use after install
-
-1. Start the app.
-2. Enter target URL (example: `https://example.org`).
-3. Select optional flags (`-a`, `-v`, `-r`) if needed.
-4. Click **Run Scan**.
-5. Watch live output panel for results.
-
-## Manual: All Args (Extra Args)
-
-Use the **Extra args** input field to pass any wafw00f CLI options directly.
-
-Supported flags:
-
-- `-h`, `--help`: show help
-- `-v`, `--verbose`: increase verbosity (can be repeated)
-- `-a`, `--findall`: find all matching WAF signatures
-- `-r`, `--noredirect`: do not follow redirects
-- `-t <name>`, `--test=<name>`: test a specific WAF signature
-- `-o <file>`, `--output=<file>`: write output to file
-- `-f <fmt>`, `--format=<fmt>`: force output format (`csv`, `json`, `text`)
-- `-i <file>`, `--input-file=<file>`: read targets from input file
-- `-l`, `--list`: list supported WAF signatures
-- `-p <proxy>`, `--proxy=<proxy>`: use HTTP/SOCKS proxy
-- `-V`, `--version`: print wafw00f version
-- `-H <file>`, `--headers=<file>`: custom headers file
-- `-T <seconds>`, `--timeout=<seconds>`: request timeout
-- `--no-colors`: disable ANSI colors in output
-
-Examples for **Extra args**:
-
-- `-v -v --no-colors`
-- `-p http://127.0.0.1:8080 -T 20`
-- `-t "Cloudflare (Cloudflare Inc.)" -v`
-- `-o result.json -f json`
-- `-i targets.txt -a`
-- `-l`
-
----
 
 ## Troubleshooting
 
-### `No module named wafw00f`
+### Target Timeout / Max Retries Exceeded
 
-Run:
+- Increase request timeout (`-T`)
+- Verify DNS/network path
+- Use a proxy if required
+
+### `No module named wafw00f`
 
 ```bash
 python -m pip install wafw00f
 ```
 
-Then rerun the app.
+### Build Fails With `PermissionError: Access is denied` On `dist/wafw00f-gui.exe`
 
-### GUI opens but scan fails
+- Close running `wafw00f-gui.exe`
+- Close any Explorer preview lock on `dist/`
+- Re-run `scripts/build.ps1`
 
-- Verify target URL starts with `http://` or `https://`
-- Check internet connectivity
-- Check app logs (status bar shows log path)
+### Linux Build Fails From Windows Path
 
-### Linux Tkinter missing
+- Build on native Linux, or
+- Use CI workflow for Linux artifact builds
 
-Install Tk package for your distro, then retry.
+## Update Check Behavior
 
-### Running Linux build script from Windows path fails
+- GUI checks:
+  - Latest GUI version/tag from repository
+  - Latest `wafw00f` version from PyPI
+- Internet connectivity is required
+- If release/tag is unavailable, GUI reports this gracefully
 
-If `bash ./scripts/build.sh` fails from a Windows drive path, use one of these:
+## Security And Legal Notice
 
-- Build Linux binary on a real Linux machine (recommended)
-- Use the included GitHub Actions workflow to build Linux artifact automatically
-
-### PowerShell script blocked (Windows)
-
-Run PowerShell as current user with a relaxed execution policy:
-
-```powershell
-Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
-```
-
----
-
-## Security and Legal
-
-- This GUI does **not** reimplement wafw00f detection logic; it calls the official package.
-- Use only on targets you are explicitly authorized to test.
-- Misuse may be illegal in your jurisdiction.
-
----
+- Use only on systems you own or are authorized to assess
+- Unauthorized scanning may violate law and policy
+- Results are heuristic and should be manually validated
+- Software is provided as-is under BSD-3-Clause
 
 ## License
 
-This project uses the same license as wafw00f: **BSD-3-Clause**.
+- GUI project: BSD-3-Clause
+- Aligned with upstream wafw00f licensing
+- See `LICENSE` for complete text
+
+## Roadmap
+
+- More advanced flag controls in dedicated UI panes
+- Saved scan profiles
+- CI release bundles for both platforms
+- Enhanced structured security reporting
